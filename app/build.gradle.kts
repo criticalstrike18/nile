@@ -3,16 +3,18 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.daggerHilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.example.nile"
+    namespace = "com.saksham.nile"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.nile"
+        applicationId = "com.saksham.nile"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
@@ -75,20 +77,23 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     //    Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
-//    Google Fonts
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.8")
-//    Icons-Extender
-    implementation("androidx.compose.material:material-icons-extended:1.6.8")
-//    Google-Maps
-    implementation("com.google.maps.android:maps-compose:6.1.0")
-    implementation("com.google.android.gms:play-services-maps:19.0.0")
-//    Places-APi
-    implementation("com.google.android.libraries.places:places:3.2.0")
-//    Dagger-Hilt
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
-//    Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation ("com.squareup.retrofit2:converter-gson:2.5.0")
+    //    Google Fonts
+    implementation(libs.google.fonts)
+    //    Icons-Extender
+    implementation(libs.icons.extender)
+    //    Compose-Navigation
+    implementation(libs.navigation.compose)
+    //    kotlin-serialization
+    implementation(libs.kotlinx.serialization.json)
+    //    preferences-datastore
+    implementation(libs.prefrences.datastore)
+    //    Dagger-Hilt
+    implementation(libs.hilt)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation)
+    //    Retro-Fit
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 }
