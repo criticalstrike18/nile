@@ -76,7 +76,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     //    Splash Screen
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation( libs.androidx.core.splashscreen)
     //    Google Fonts
     implementation(libs.google.fonts)
     //    Icons-Extender
@@ -85,8 +85,6 @@ dependencies {
     implementation(libs.navigation.compose)
     //    kotlin-serialization
     implementation(libs.kotlinx.serialization.json)
-    //    preferences-datastore
-    implementation(libs.prefrences.datastore)
     //    Dagger-Hilt
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)

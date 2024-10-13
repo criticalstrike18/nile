@@ -1,16 +1,30 @@
 package com.saksham.nile.domain
 
-import com.saksham.nile.data.ApiInterface
-import com.saksham.nile.utils.Utils
+import com.saksham.nile.data.StockApiService
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
 
-object RetrofitInstance {
-    val api: ApiInterface by lazy {
-        Retrofit.Builder()
-            .baseUrl(Utils.server)
+@Module
+@InstallIn(SingletonComponent::class)
+object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://query1.finance.yahoo.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(ApiInterface::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStockApiService(retrofit: Retrofit): StockApiService {
+        return retrofit.create(StockApiService::class.java)
     }
 }
