@@ -14,10 +14,14 @@ import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.sp
+import com.saksham.nile.domain.ChartDataPoint
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun StockChart(
-    data: List<Double>,
+    data: List<ChartDataPoint>,
     modifier: Modifier = Modifier,
     lineColor: Color = MaterialTheme.colorScheme.primary,
     lineWidth: Float = 3f,
@@ -28,22 +32,24 @@ fun StockChart(
     )
 ) {
     val spacing = 100f
-    val graphColor = lineColor
     val transparentGraphColor = remember {
-        graphColor.copy(alpha = 0.5f)
+        lineColor.copy(alpha = 0.5f)
     }
-    val upperValue = remember(data) { data.maxOrNull() ?: 0.0 }
-    val lowerValue = remember(data) { data.minOrNull() ?: 0.0 }
+    val upperValue = remember(data) { data.maxOfOrNull { it.close } ?: 0.0 }
+    val lowerValue = remember(data) { data.minOfOrNull { it.close } ?: 0.0 }
+    val dateFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     Canvas(modifier = modifier) {
         val spacePerHour = (size.width - spacing) / data.size
-        (data.indices step 2).forEach { i ->
+
+        // Draw time labels
+        (data.indices step (data.size / 5)).forEach { i ->
             val info = data[i]
-            val hour = i * 24 / data.size
+            val formattedDate = dateFormatter.format(Date(info.timestamp * 1000))
 
             drawContext.canvas.nativeCanvas.apply {
                 drawText(
-                    "${hour}h",
+                    formattedDate,
                     spacing + i * spacePerHour,
                     size.height,
                     android.graphics.Paint().apply {
@@ -55,6 +61,7 @@ fun StockChart(
             }
         }
 
+        // Draw price labels
         val priceStep = (upperValue - lowerValue) / 5
         (0..4).forEach { i ->
             drawContext.canvas.nativeCanvas.apply {
@@ -75,9 +82,9 @@ fun StockChart(
         var lastY = 0f
         val strokePath = Path().apply {
             val height = size.height
-            data.forEachIndexed { index, price ->
+            data.forEachIndexed { index, point ->
                 val nextX = spacing + index * spacePerHour
-                val nextY = height - spacing - (price.toFloat() - lowerValue.toFloat()) * (height - spacing) / (upperValue - lowerValue).toFloat()
+                val nextY = height - spacing - (point.close.toFloat() - lowerValue.toFloat()) * (height - spacing) / (upperValue - lowerValue).toFloat()
                 if (index == 0) {
                     moveTo(nextX, nextY)
                 } else {
@@ -94,7 +101,7 @@ fun StockChart(
 
         drawPath(
             path = strokePath,
-            color = graphColor,
+            color = lineColor,
             style = Stroke(
                 width = lineWidth,
                 cap = StrokeCap.Round

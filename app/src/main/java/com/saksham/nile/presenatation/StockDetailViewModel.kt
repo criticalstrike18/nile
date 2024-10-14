@@ -5,7 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.saksham.nile.data.model.StockDetail
 import com.saksham.nile.data.model.StockDetailUiState
+import com.saksham.nile.domain.ApiException
+import com.saksham.nile.domain.ChartDataPoint
+import com.saksham.nile.domain.NetworkException
 import com.saksham.nile.domain.StockRepository
 import com.saksham.nile.presenatation.screens.TimeRange
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +27,7 @@ class StockDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StockDetailUiState())
     val uiState: StateFlow<StockDetailUiState> = _uiState
 
-    var chartData by mutableStateOf<List<Double>>(emptyList())
+    var chartData by mutableStateOf<List<ChartDataPoint>>(emptyList())
 
     fun loadStockDetails(symbol: String) {
         viewModelScope.launch {
@@ -33,7 +37,16 @@ class StockDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(stockDetail = stockDetail, isLoading = false) }
                 loadChartData(TimeRange.ONE_DAY)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "An unknown error occurred", isLoading = false) }
+                _uiState.update {
+                    it.copy(
+                        error = when (e) {
+                            is NetworkException -> "Network error: ${e.message}"
+                            is ApiException -> "API error: ${e.message}"
+                            else -> "An unexpected error occurred: ${e.message}"
+                        },
+                        isLoading = false
+                    )
+                }
             }
         }
     }
@@ -43,9 +56,23 @@ class StockDetailViewModel @Inject constructor(
             try {
                 chartData = stockRepository.getChartData(_uiState.value.stockDetail!!.symbol, timeRange)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message ?: "An error occurred while loading chart data") }
+                _uiState.update {
+                    it.copy(
+                        error = when (e) {
+                            is NetworkException -> "Network error while loading chart data: ${e.message}"
+                            is ApiException -> "API error while loading chart data: ${e.message}"
+                            else -> "An unexpected error occurred while loading chart data: ${e.message}"
+                        }
+                    )
+                }
             }
         }
     }
 }
+
+data class StockDetailUiState(
+    val stockDetail: StockDetail? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 

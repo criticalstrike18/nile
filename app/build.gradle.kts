@@ -25,7 +25,7 @@ android {
             useSupportLibrary = true
         }
         val properties = gradleLocalProperties(rootDir,project.providers)
-        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${properties.getProperty("GOOGLE_MAPS_API_KEY")}\"")
+        buildConfigField("String", "API_KEY", "\"${properties.getProperty("FINHUB_API_KEY")}\"")
     }
 
     buildTypes {
@@ -35,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {

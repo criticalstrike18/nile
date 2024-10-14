@@ -57,12 +57,10 @@ fun StockDetailScreen(
                 Text(text = stock.symbol, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Current Price: $${stock.currentPrice}", style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    text = "${stock.percentageChange}%",
-                    color = if (stock.percentageChange >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+                // Note: Current price and percentage change are not available in the new API response
+                // You might want to fetch this data separately or remove these fields
+                Text(text = "Current Price: Not available", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Percentage Change: Not available", style = MaterialTheme.typography.bodyLarge)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -71,9 +69,9 @@ fun StockDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(text = "Company Information", style = MaterialTheme.typography.titleLarge)
-                Text(text = "Registration Date: ${stock.registrationDate}")
+                Text(text = "IPO Date: ${stock.registrationDate}")
                 Text(text = "Industry: ${stock.industry}")
-                Text(text = "Description: ${stock.description}")
+                Text(text = stock.description)
             }
         }
     }

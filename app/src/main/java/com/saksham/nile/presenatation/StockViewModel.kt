@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saksham.nile.data.model.StockInfo
+import com.saksham.nile.domain.ApiException
+import com.saksham.nile.domain.NetworkException
 import com.saksham.nile.domain.StockRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -27,7 +29,11 @@ class StockViewModel @Inject constructor(
             try {
                 searchResults = stockRepository.searchStocks(query)
             } catch (e: Exception) {
-                error = e.message ?: "An unknown error occurred"
+                error = when (e) {
+                    is NetworkException -> "Network error: ${e.message}"
+                    is ApiException -> "API error: ${e.message}"
+                    else -> "An unexpected error occurred: ${e.message}"
+                }
             } finally {
                 isLoading = false
             }
