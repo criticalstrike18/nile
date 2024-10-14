@@ -2,6 +2,7 @@ package com.saksham.nile.presenatation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -31,38 +32,48 @@ fun StockChart(
         lineColor.copy(alpha = 0f)
     )
 ) {
+    if (data.isEmpty()) {
+        Text("No data available")
+        return
+    }
+
     val spacing = 100f
     val transparentGraphColor = remember {
         lineColor.copy(alpha = 0.5f)
     }
-    val upperValue = remember(data) { data.maxOfOrNull { it.close } ?: 0.0 }
-    val lowerValue = remember(data) { data.minOfOrNull { it.close } ?: 0.0 }
+    val upperValue = remember(data) { data.maxOfOrNull { it.close }?.toFloat() ?: 0f }
+    val lowerValue = remember(data) { data.minOfOrNull { it.close }?.toFloat() ?: 0f }
     val dateFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     Canvas(modifier = modifier) {
-        val spacePerHour = (size.width - spacing) / data.size
+        val spacePerHour = (size.width - spacing) / data.size.coerceAtLeast(1)
 
         // Draw time labels
-        (data.indices step (data.size / 5)).forEach { i ->
-            val info = data[i]
-            val formattedDate = dateFormatter.format(Date(info.timestamp * 1000))
+        val labelCount = minOf(data.size, 5)
+        if (labelCount > 1) {
+            val step = (data.size - 1) / (labelCount - 1)
+            (0 until labelCount).forEach { i ->
+                val index = i * step
+                val info = data[index]
+                val formattedDate = dateFormatter.format(Date(info.timestamp * 1000))
 
-            drawContext.canvas.nativeCanvas.apply {
-                drawText(
-                    formattedDate,
-                    spacing + i * spacePerHour,
-                    size.height,
-                    android.graphics.Paint().apply {
-                        color = android.graphics.Color.WHITE
-                        textSize = 12.sp.toPx()
-                        textAlign = android.graphics.Paint.Align.CENTER
-                    }
-                )
+                drawContext.canvas.nativeCanvas.apply {
+                    drawText(
+                        formattedDate,
+                        spacing + index * spacePerHour,
+                        size.height,
+                        android.graphics.Paint().apply {
+                            color = android.graphics.Color.WHITE
+                            textSize = 12.sp.toPx()
+                            textAlign = android.graphics.Paint.Align.CENTER
+                        }
+                    )
+                }
             }
         }
 
         // Draw price labels
-        val priceStep = (upperValue - lowerValue) / 5
+        val priceStep = (upperValue - lowerValue) / 5f
         (0..4).forEach { i ->
             drawContext.canvas.nativeCanvas.apply {
                 drawText(
@@ -84,7 +95,7 @@ fun StockChart(
             val height = size.height
             data.forEachIndexed { index, point ->
                 val nextX = spacing + index * spacePerHour
-                val nextY = height - spacing - (point.close.toFloat() - lowerValue.toFloat()) * (height - spacing) / (upperValue - lowerValue).toFloat()
+                val nextY = height - spacing - (point.close.toFloat() - lowerValue) * (height - spacing) / (upperValue - lowerValue).coerceAtLeast(1f)
                 if (index == 0) {
                     moveTo(nextX, nextY)
                 } else {

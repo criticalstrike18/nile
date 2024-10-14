@@ -43,7 +43,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(top = 50.dp, start = 16.dp, end = 16.dp)
     ) {
         TextField(
             value = searchQuery,

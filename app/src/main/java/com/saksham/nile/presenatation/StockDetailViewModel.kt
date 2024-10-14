@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.saksham.nile.data.model.StockDetail
-import com.saksham.nile.data.model.StockDetailUiState
 import com.saksham.nile.domain.ApiException
 import com.saksham.nile.domain.ChartDataPoint
 import com.saksham.nile.domain.NetworkException
@@ -41,7 +40,10 @@ class StockDetailViewModel @Inject constructor(
                     it.copy(
                         error = when (e) {
                             is NetworkException -> "Network error: ${e.message}"
-                            is ApiException -> "API error: ${e.message}"
+                            is ApiException -> {
+                                if (e.code == 403) "Authentication error: Please check your API key or permissions."
+                                else "API error: ${e.message}"
+                            }
                             else -> "An unexpected error occurred: ${e.message}"
                         },
                         isLoading = false
@@ -60,7 +62,10 @@ class StockDetailViewModel @Inject constructor(
                     it.copy(
                         error = when (e) {
                             is NetworkException -> "Network error while loading chart data: ${e.message}"
-                            is ApiException -> "API error while loading chart data: ${e.message}"
+                            is ApiException -> {
+                                if (e.code == 403) "Authentication error: Please check your API key or permissions for chart data."
+                                else "API error while loading chart data: ${e.message}"
+                            }
                             else -> "An unexpected error occurred while loading chart data: ${e.message}"
                         }
                     )

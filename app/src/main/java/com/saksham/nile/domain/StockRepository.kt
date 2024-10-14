@@ -60,7 +60,17 @@ class StockRepository @Inject constructor(
 
             response.toChartDataPoints()
         } catch (e: Exception) {
-            handleException(e, "Error fetching chart data")
+            when (e) {
+                is HttpException -> {
+                    if (e.code() == 403) {
+                        throw ApiException("API access denied. Please check your API key and permissions.", e, 403)
+                    } else {
+                        throw ApiException("API error: ${e.code()} - ${e.message()}", e, e.code())
+                    }
+                }
+                is IOException -> throw NetworkException("Network error occurred: ${e.message}", e)
+                else -> throw UnknownException("An unexpected error occurred: ${e.message}", e)
+            }
         }
     }
 
@@ -74,7 +84,7 @@ class StockRepository @Inject constructor(
     private fun handleException(e: Exception, message: String): Nothing {
         throw when (e) {
             is IOException -> NetworkException("Network error occurred: ${e.message}", e)
-            is HttpException -> ApiException("API error occurred: ${e.code()} - ${e.message()}", e)
+            is HttpException -> ApiException("API error occurred: ${e.code()} - ${e.message()}", e,e.code())
             else -> UnknownException("An unexpected error occurred: ${e.message}", e)
         }
     }
@@ -110,16 +120,6 @@ private fun ChartDataResponse.toChartDataPoints(): List<ChartDataPoint> {
 }
 
 // Domain models
-data class StockInfo(val symbol: String, val companyName: String)
-data class StockDetail(
-    val symbol: String,
-    val companyName: String,
-    val currentPrice: Double,
-    val percentageChange: Double,
-    val registrationDate: String,
-    val industry: String,
-    val description: String
-)
 data class ChartDataPoint(
     val timestamp: Long,
     val open: Double,
@@ -129,11 +129,11 @@ data class ChartDataPoint(
     val volume: Long
 )
 
-enum class TimeRange {
-    ONE_DAY, ONE_WEEK, ONE_MONTH, ONE_YEAR
-}
+//enum class TimeRange {
+//    ONE_DAY, ONE_WEEK, ONE_MONTH, ONE_YEAR
+//}
 
 // Exception classes remain the same
 class NetworkException(message: String, cause: Throwable? = null) : Exception(message, cause)
-class ApiException(message: String, cause: Throwable? = null) : Exception(message, cause)
+class ApiException(message: String, cause: Throwable? = null, val code: Int) : Exception(message, cause)
 class UnknownException(message: String, cause: Throwable? = null) : Exception(message, cause)
